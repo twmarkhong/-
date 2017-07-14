@@ -1,0 +1,22 @@
+Sub Macro()
+Dim Bond() As String
+Row = Worksheets("test2").Range("A500").End(xlUp).Row'copy the data from trading listFor i = 1 To Row    Worksheets("test2").Cells(i, 1) = Worksheets("trade").Cells(i, 21)    Worksheets("test2").Cells(i, 2) = Worksheets("trade").Cells(i, 7)    Worksheets("test2").Cells(i, 3) = Worksheets("trade").Cells(i, 26)    Worksheets("test2").Cells(i, 4) = Worksheets("trade").Cells(i, 29)    Worksheets("test2").Cells(i, 5) = Worksheets("trade").Cells(i, 30)Next i
+'search for total cost& Original Notional of bondWorksheets("test2").Cells(1, 6) = "Total Cost"Worksheets("test2").Cells(1, 7) = "Original Notional"
+For s = 2 To Row    Worksheets("test2").Cells(s, 6).FormulaArray = "=INDEX(資料,MATCH(1,(SEC_ID = A" & s & ")*(Booking = B" & s & "),0),11)" '***想辦法讓他自動偵測範圍    Worksheets("test2").Cells(s, 7).FormulaArray = "=INDEX(資料,MATCH(1,(SEC_ID = A" & s & ")*(Booking = B" & s & "),0),6)"Next s
+'include new trading correcting the total cost
+Worksheets("test2").Cells(1, 8) = "Cor_Total_Cost"Worksheets("test2").Cells(1, 9) = "Cor_Original_Notional"Worksheets("test2").Cells(1, 10) = "Unit Cost"Worksheets("test2").Cells(1, 11) = "Profit"Worksheets("test2").Cells(1, 12) = "Count"Worksheets("test2").Cells(1, 13) = "Subtotal"
+'count the trading times
+For x = 2 To Row    Worksheets("test2").Cells(x, 12) = 1Next x
+Worksheets("test2").Cells(501, 12).Formula = "=Subtotal(109,L1:L500)"
+'make the bond name list(without overlapping)
+ReDim Bond(Row)
+For i = 1 To Row    Bond(i) = Worksheets("test2").Cells(i, 1)Next i
+Set dic = CreateObject("scripting.dictionary")For Each c In Bond    dic(c) = ""    Bond_list = dic.KeysNext
+'calculate the total cost by the category
+'For Each b In Bond    
+
+'recalculate the total cost as cor_total_cost&cor_original_notional
+For j = 2 To Row    If Worksheets("test2").Cells(j, 4) > 0 Then        Worksheets("test2").Cells(j, 8) = CDbl(Worksheets("test2").Cells(j, 6)) - CDbl(Worksheets("test2").Cells(j, 5))   '***必須想辦法隨時間繼承上一筆交易所產生之修改        Worksheets("test2").Cells(j, 9) = CDbl(Worksheets("test2").Cells(j, 7)) - CDbl(Worksheets("test2").Cells(j, 5))    Else        Worksheets("test2").Cells(j, 8) = CDbl(Worksheets("test2").Cells(j, 6)) - CDbl(Worksheets("test2").Cells(j, 4))        Worksheets("test2").Cells(j, 9) = CDbl(Worksheets("test2").Cells(j, 7)) - CDbl(Worksheets("test2").Cells(j, 5))    End IfNext j
+'claculate unit cost&profit
+For t = 2 To Row    Worksheets("test2").Cells(j, 10) = CDbl(Worksheets("test2").Cells(j, 5)) / CDbl(Worksheets("test2").Cells(j, 7)) * CDbl(Worksheets("test2").Cells(j, 6))    If Worksheets("test2").Cells(j, 4) > 0 Then        Worksheets("test2").Cells(j, 11) = CDbl(Worksheets("test2").Cells(j, 4)) - CDbl(Worksheets("test2").Cells(j, 10))    End IfNext t
+End Sub
